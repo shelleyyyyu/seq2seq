@@ -36,6 +36,7 @@ with tf.Session() as sess:
         prediction_output = [[reversed_dict[y] for y in x] for x in prediction[:, 0, :]]
 
         with open("result.txt", "a") as f:
+            f.truncate(0)
             for line in prediction_output:
                 summary = list()
                 for word in line:
@@ -43,7 +44,9 @@ with tf.Session() as sess:
                         break
                     if word not in summary:
                         summary.append(word)
-                #print(" ".join(summary), file=f)
-                f.write(" ".join(summary))
+                f.write(" ".join(summary)+"\n")
+
+
+
 
     print('Summaries are saved to "result.txt"...')
