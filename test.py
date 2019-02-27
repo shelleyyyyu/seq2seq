@@ -35,8 +35,8 @@ with tf.Session() as sess:
         prediction = sess.run(model.prediction, feed_dict=valid_feed_dict)
         prediction_output = [[reversed_dict[y] for y in x] for x in prediction[:, 0, :]]
 
-        with open("result.txt", "a") as f:
-            f.truncate(0)
+        with open("result2.txt", "a") as f:
+       
             for line in prediction_output:
                 summary = list()
                 for word in line:

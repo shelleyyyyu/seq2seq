@@ -7,3 +7,6 @@ saved_model
 result copy
 result.txt
 args.pickle
+result2.txt
+test.log
+train.log
