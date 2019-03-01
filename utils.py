@@ -12,8 +12,8 @@ from gensim.scripts.glove2word2vec import glove2word2vec
 
 train_article_path = "result/train.txt"
 train_title_path = "result/train_ground_truth.txt"
-valid_article_path = "result/valid.txt"
-valid_title_path = "result/valid_ground_truth.txt"
+valid_article_path = "result/test.txt"
+valid_title_path = "result/test_ground_truth.txt"
 
 
 def clean_str(sentence):
