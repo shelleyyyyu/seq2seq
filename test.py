@@ -24,8 +24,7 @@ with tf.Session() as sess:
     story_test_result_list = []
 
     for index in range(len(test_x)):
-        title = test_x[index][0]
-        inputs = test_x[index][1:]
+        inputs = test_x[index]
         batches = test_batch_iter(inputs, [0] * len(test_x), args.batch_size, 1)
 
         result = []
