@@ -10,14 +10,17 @@ from gensim.test.utils import get_tmpfile
 from gensim.scripts.glove2word2vec import glove2word2vec
 
 
-train_article_path = "result/train.txt"
-train_title_path = "result/train_ground_truth.txt"
-valid_article_path = "result/test.txt"
-valid_title_path = "result/test_ground_truth.txt"
+train_path = "result/train.txt"
+train_gt_path = "result/train_ground_truth.txt"
+test_path = "result/test.txt"
+test_gt_path = "result/test_ground_truth.txt"
 
 
 def clean_str(sentence):
-    #sentence = re.sub("[#.]+", "#", sentence)
+    #sentence = re.sub("[#.]+", " ", sentence)
+    sentence = sentence.replace("[", "")
+    sentence = sentence.replace("]", " ")
+    sentence = sentence.replace("<split>", " ")
     return sentence
 
 
@@ -29,13 +32,42 @@ def get_text_list(data_path, toy):
             return [clean_str(x.strip()) for x in f.readlines()][:50000]
 
 
+def get_train_list(data_path):
+    with open(data_path, "r") as f:
+        title_list = []
+        story_list = []
+        for line in f.readlines():
+            line_array = line.split("]")
+            title = line_array[0][1:]
+            story = line_array[1].split("<split>")[:-1]
+            story_list.extend(story)
+            title_list.append(title)
+        return title_list, story_list
+
+
+def get_test_list(data_path):
+    with open(data_path, "r") as f:
+        story_list = []
+        title_list = []
+        for line in f.readlines():
+            array = []
+            line_array = line.split("]")
+            title = line_array[0][1:]
+            story = line_array[1].split("<split>")[:-1]
+            title_list.append(title)
+            array.extend(story)
+            story_list.append(array)
+        return title_list, story_list
+
+
+
 def build_dict(step, toy=False):
     if step == "train":
-        train_article_list = get_text_list(train_article_path, toy)
-        train_title_list = get_text_list(train_title_path, toy)
+        train_story_list = get_text_list(train_path, toy)
+        story_gt_list = get_text_list(train_gt_path, toy)
 
         words = list()
-        for sentence in train_article_list + train_title_list:
+        for sentence in train_story_list + story_gt_list:
             for word in word_tokenize(sentence):
                 words.append(word)
 
@@ -51,7 +83,7 @@ def build_dict(step, toy=False):
         with open("word_dict.pickle", "wb") as f:
             pickle.dump(word_dict, f)
 
-    elif step == "valid":
+    elif step == "test":
         with open("word_dict.pickle", "rb") as f:
             word_dict = pickle.load(f)
 
@@ -63,30 +95,47 @@ def build_dict(step, toy=False):
     return word_dict, reversed_dict, article_max_len, summary_max_len
 
 
-def build_dataset(step, word_dict, article_max_len, summary_max_len, toy=False):
-    if step == "train":
-        article_list = get_text_list(train_article_path, toy)
-        title_list = get_text_list(train_title_path, toy)
-    elif step == "valid":
-        article_list = get_text_list(valid_article_path, toy)
-    else:
-        raise NotImplementedError
+def build_train_dataset(word_dict, article_max_len, summary_max_len):
+    _, story_list = get_train_list(train_path)
+    _, story_gt_list = get_train_list(train_gt_path)
 
-    x = [word_tokenize(d) for d in article_list]
+
+    x = [word_tokenize(d) for d in story_list]
     x = [[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in x]
     x = [d[:article_max_len] for d in x]
     x = [d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in x]
-    
-    if step == "valid":
-        return x
-    else:        
-        y = [word_tokenize(d) for d in title_list]
-        y = [[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in y]
-        y = [d[:(summary_max_len - 1)] for d in y]
-        return x, y
+
+    y = [word_tokenize(d) for d in story_gt_list]
+    y = [[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in y]
+    y = [d[:(summary_max_len - 1)] for d in y]
+    return x, y
+
+
+def build_test_dataset(word_dict, article_max_len):
+    title_list, story_list = get_test_list(test_path)
+    s = [[word_tokenize(d) for d in story]for story in story_list]
+    s = [[[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in x]for x in s]
+    s = [[d[:article_max_len] for d in x] for x in s]
+    s = [[d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in x] for x in s]
+
+    return title_list, s
+
+
 
 
 def batch_iter(inputs, outputs, batch_size, num_epochs):
+    inputs = np.array(inputs)
+    outputs = np.array(outputs)
+
+    num_batches_per_epoch = (len(inputs) - 1) // batch_size + 1
+    for epoch in range(num_epochs):
+        for batch_num in range(num_batches_per_epoch):
+            start_index = batch_num * batch_size
+            end_index = min((batch_num + 1) * batch_size, len(inputs))
+            yield inputs[start_index:end_index], outputs[start_index:end_index]
+
+
+def test_batch_iter(inputs, outputs, batch_size, num_epochs):
     inputs = np.array(inputs)
     outputs = np.array(outputs)
 

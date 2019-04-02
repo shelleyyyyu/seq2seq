@@ -5,7 +5,7 @@ import argparse
 import pickle
 import os
 from model import Model
-from utils import build_dict, build_dataset, batch_iter
+from utils import build_dict, build_train_dataset, batch_iter
 
 # Uncomment next 2 lines to suppress error and Tensorflow info verbosity. Or change logging levels
 # tf.logging.set_verbosity(tf.logging.FATAL)
@@ -46,7 +46,7 @@ else:
 print("Building dictionary...")
 word_dict, reversed_dict, article_max_len, summary_max_len = build_dict("train", args.toy)
 print("Loading training dataset...")
-train_x, train_y = build_dataset("train", word_dict, article_max_len, summary_max_len, args.toy)
+train_x, train_y = build_train_dataset(word_dict, article_max_len, summary_max_len)
 with tf.Session() as sess:
     model = Model(reversed_dict, article_max_len, summary_max_len, args)
     sess.run(tf.global_variables_initializer())
