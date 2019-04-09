@@ -13,4 +13,7 @@ test.log
 train.log
 result
 data/prep
-result_edit
+/result_edit/
+word_dict.pickle
+args.pickle
+*.pickle
