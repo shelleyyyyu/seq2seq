@@ -60,9 +60,6 @@ def get_test_list(data_path):
             total_story.extend(story[:-1])
             story_list.append(total_story)
             title_list.append(title)
-        print ('================get_test_list=================')
-        print title_list[0]
-        print story_list[0]
         return title_list, story_list
 
 
@@ -129,6 +126,13 @@ def build_test_dataset(word_dict, article_max_len):
     return title_list, s
 
 
+def build_train_draft_dataset(word_dict, article_max_len):
+    title_list, story_list = get_test_list(train_path)
+    s = [[word_tokenize(d) for d in story]for story in story_list]
+    s = [[[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in x]for x in s]
+    s = [[d[:article_max_len] for d in x] for x in s]
+    s = [[d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in x] for x in s]
+    return title_list, s
 
 
 def batch_iter(inputs, outputs, batch_size, num_epochs):

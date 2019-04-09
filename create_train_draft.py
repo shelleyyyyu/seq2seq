@@ -1,7 +1,7 @@
 import tensorflow as tf
 import pickle
 from model import Model
-from utils import build_dict, build_test_dataset, test_batch_iter
+from utils import build_dict, build_train_draft_dataset, test_batch_iter
 import os
 
 
@@ -11,7 +11,7 @@ with open("args.pickle", "rb") as f:
 print("Loading dictionary...")
 word_dict, reversed_dict, article_max_len, summary_max_len = build_dict("test", args.toy)
 print("Loading test dataset...")
-title_list, test_x = build_test_dataset(word_dict, article_max_len)
+title_list, test_x = build_train_draft_dataset(word_dict, article_max_len)
 test_x_len = [len([y for y in x if y != 0]) for x in test_x]
 
 with tf.Session() as sess:
@@ -26,7 +26,6 @@ with tf.Session() as sess:
         print ("Using Attention")
     else:
         print ("Not Using Attention")
-
     for index in range(len(test_x)):
         inputs = test_x[index]
         batches = test_batch_iter(inputs, [0] * len(test_x), args.batch_size, 1)
@@ -61,7 +60,7 @@ with tf.Session() as sess:
 
     if not os.path.exists("result"):
             os.mkdir("result")
-    with open("result/test.txt", "wr") as f:
+    with open("result/train.txt", "wr") as f:
         for story in story_test_result_list:
             f.write(story+"\n")
-    print('Summaries are saved to "test.txt"...')
+    print('Summaries are saved to "train.txt"...')

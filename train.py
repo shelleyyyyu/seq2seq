@@ -50,6 +50,10 @@ print("Loading training dataset...")
 train_x, train_y = build_train_dataset(word_dict, article_max_len, summary_max_len)
 with tf.Session() as sess:
     model = Model(reversed_dict, article_max_len, summary_max_len, args)
+    if args.use_atten:
+        print ("Using Attention")
+    else:
+        print ("Not Using Attention")
     sess.run(tf.global_variables_initializer())
     saver = tf.train.Saver(tf.global_variables())
     if 'old_model_checkpoint_path' in globals():
