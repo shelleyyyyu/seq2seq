@@ -10,3 +10,5 @@ args.pickle
 result2.txt
 test.log
 train.log
+result
+data/prep

@@ -55,9 +55,9 @@ with tf.Session() as sess:
 
 
 
-    if not os.path.exists("result_edit"):
-            os.mkdir("result_edit")
-    with open("result_edit/test_edit.txt", "wr") as f:
+    if not os.path.exists("result"):
+            os.mkdir("result")
+    with open("result/test.txt", "wr") as f:
         for story in story_test_result_list:
             f.write(story+"\n")
-    print('Summaries are saved to "test_edit.txt"...')
+    print('Summaries are saved to "test.txt"...')
