@@ -27,6 +27,7 @@ with tf.Session() as sess:
     else:
         print ("Not Using Attention")
     for index in range(len(test_x)):
+        print ("testing %d out of %d" % (index, len(test_x)))
         inputs = test_x[index]
         batches = test_batch_iter(inputs, [0] * len(test_x), args.batch_size, 1)
 
