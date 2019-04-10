@@ -26,6 +26,7 @@ def add_arguments(parser):
     parser.add_argument("--toy", action="store_true", help="Use only 50K samples of data")
 
     parser.add_argument("--with_model", action="store_true", help="Continue from previously saved model")
+    parser.add_argument("--use_atten", action="store_true", help="Use attention")
 
 
 
