@@ -135,6 +135,15 @@ def build_train_draft_dataset(word_dict, article_max_len):
     return title_list, s
 
 
+def build_valid_draft_dataset(word_dict, article_max_len):
+    title_list, story_list = get_test_list(valid_path)
+    s = [[word_tokenize(d) for d in story]for story in story_list]
+    s = [[[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in x]for x in s]
+    s = [[d[:article_max_len] for d in x] for x in s]
+    s = [[d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in x] for x in s]
+    return title_list, s
+
+
 def batch_iter(inputs, outputs, batch_size, num_epochs):
     inputs = np.array(inputs)
     outputs = np.array(outputs)
