@@ -108,6 +108,10 @@ def build_train_dataset(word_dict, article_max_len, summary_max_len):
     y = [word_tokenize(d) for d in story_gt_list]
     y = [[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in y]
     y = [d[:(summary_max_len - 1)] for d in y]
+
+    print '[[[[[[[[[[[[[[[[[[[[build_train_dataset]]]]]]]]]]]]]]]]]]]'
+    print x[0]
+    print y[0]
     return x, y
 
 
