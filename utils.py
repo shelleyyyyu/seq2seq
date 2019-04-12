@@ -11,7 +11,7 @@ from gensim.scripts.glove2word2vec import glove2word2vec
 
 
 train_path = "data/train.txt"
-train_path = "data/valid.txt"
+valid_path = "data/valid.txt"
 test_path = "data/test.txt"
 
 
