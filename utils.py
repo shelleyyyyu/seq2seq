@@ -12,6 +12,8 @@ from gensim.scripts.glove2word2vec import glove2word2vec
 
 train_path = "result/train.txt"
 train_gt_path = "result/train_ground_truth.txt"
+valid_path = "result/valid.txt"
+valid_gt_path = "result/vaid_ground_truth.txt"
 test_path = "result/test.txt"
 test_gt_path = "result/test_ground_truth.txt"
 
@@ -109,9 +111,6 @@ def build_train_dataset(word_dict, article_max_len, summary_max_len):
     y = [[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in y]
     y = [d[:(summary_max_len - 1)] for d in y]
 
-    print '[[[[[[[[[[[[[[[[[[[[build_train_dataset]]]]]]]]]]]]]]]]]]]'
-    print x[0]
-    print y[0]
     return x, y
 
 
