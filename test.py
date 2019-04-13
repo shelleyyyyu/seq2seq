@@ -22,6 +22,10 @@ with tf.Session() as sess:
     saver.restore(sess, ckpt.model_checkpoint_path)
 
     story_test_result_list = []
+    if args.use_atten:
+        print ("Using Attention")
+    else:
+        print ("Not Using Attention")
 
     for index in range(len(test_x)):
         inputs = test_x[index]
@@ -57,7 +61,7 @@ with tf.Session() as sess:
 
     if not os.path.exists("result_edit"):
             os.mkdir("result_edit")
-    with open("result_edit/test_edit.txt", "wr") as f:
+    with open("result_edit/test.txt", "wr") as f:
         for story in story_test_result_list:
             f.write(story+"\n")
-    print('Summaries are saved to "test_edit.txt"...')
+    print('Summaries are saved to "test.txt"...')

@@ -14,7 +14,7 @@ from utils import build_dict, build_train_dataset, batch_iter
 def add_arguments(parser):
     parser.add_argument("--num_hidden", type=int, default=150, help="Network size.")
     parser.add_argument("--num_layers", type=int, default=2, help="Network depth.")
-    parser.add_argument("--beam_width", type=int, default=10, help="Beam width for beam search decoder.")
+    parser.add_argument("--beam_width", type=int, default=1, help="Beam width for beam search decoder.")
     parser.add_argument("--glove", action="store_true", help="Use glove as initial word embedding.")
     parser.add_argument("--embedding_size", type=int, default=300, help="Word embedding size.")
 
@@ -24,9 +24,9 @@ def add_arguments(parser):
     parser.add_argument("--keep_prob", type=float, default=0.8, help="Dropout keep prob.")
 
     parser.add_argument("--toy", action="store_true", help="Use only 50K samples of data")
+    parser.add_argument("--use_atten", action="store_true", help="Use only 50K samples of data")
 
     parser.add_argument("--with_model", action="store_true", help="Continue from previously saved model")
-    parser.add_argument("--use_atten", action="store_true", help="Use attention")
 
 
 
@@ -41,7 +41,7 @@ if not os.path.exists("saved_model"):
 else:
     if args.with_model:
         old_model_checkpoint_path = open('saved_model/checkpoint', 'r')
-        old_model_checkpoint_path = "".join(["saved_model/",old_model_checkpoint_path.read().splitlines()[0].split('"')[1] ])
+        old_model_checkpoint_path = "".join(["saved_model/", old_model_checkpoint_path.read().splitlines()[0].split('"')[1] ])
 
 
 print("Building dictionary...")
@@ -50,6 +50,10 @@ print("Loading training dataset...")
 train_x, train_y = build_train_dataset(word_dict, article_max_len, summary_max_len)
 with tf.Session() as sess:
     model = Model(reversed_dict, article_max_len, summary_max_len, args)
+    if args.use_atten:
+        print ("Using Attention")
+    else:
+        print ("Not Using Attention")
     sess.run(tf.global_variables_initializer())
     saver = tf.train.Saver(tf.global_variables())
     if 'old_model_checkpoint_path' in globals():

@@ -15,6 +15,7 @@ class Model(object):
             self.keep_prob = args.keep_prob
         else:
             self.keep_prob = 1.0
+        self.use_atten = args.use_atten
         self.cell = tf.nn.rnn_cell.BasicLSTMCell
         with tf.variable_scope("decoder/projection"):
             self.projection_layer = tf.layers.Dense(self.vocabulary_size, use_bias=False)
@@ -52,12 +53,8 @@ class Model(object):
 
         with tf.name_scope("decoder"), tf.variable_scope("decoder") as decoder_scope:
             decoder_cell = self.cell(self.num_hidden * 2)
-            if args.use_atten:
-                print "Use Attention"
-            else:
-                print "Not Using Attention"
             if not forward_only:
-                if args.use_atten:
+                if self.use_atten:
                     attention_states = tf.transpose(self.encoder_output, [1, 0, 2])
                     attention_mechanism = tf.contrib.seq2seq.BahdanauAttention(
                         self.num_hidden * 2, attention_states, memory_sequence_length=self.X_len, normalize=True)
@@ -65,26 +62,18 @@ class Model(object):
                                                                        attention_layer_size=self.num_hidden * 2)
                     initial_state = decoder_cell.zero_state(dtype=tf.float32, batch_size=self.batch_size)
                     initial_state = initial_state.clone(cell_state=self.encoder_state)
-                    helper = tf.contrib.seq2seq.TrainingHelper(self.decoder_emb_inp, self.decoder_len, time_major=True)
-                    decoder = tf.contrib.seq2seq.BasicDecoder(decoder_cell, helper, initial_state)
-                    outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(decoder, output_time_major=True, scope=decoder_scope)
-                    self.decoder_output = outputs.rnn_output
-                    self.logits = tf.transpose(
-                        self.projection_layer(self.decoder_output), perm=[1, 0, 2])
-                    self.logits_reshape = tf.concat(
-                        [self.logits, tf.zeros([self.batch_size, summary_max_len - tf.shape(self.logits)[1], self.vocabulary_size])], axis=1)
                 else:
                     initial_state = self.encoder_state
-                    helper = tf.contrib.seq2seq.TrainingHelper(self.decoder_emb_inp, self.decoder_len, time_major=True)
-                    decoder = tf.contrib.seq2seq.BasicDecoder(decoder_cell, helper, initial_state)
-                    outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(decoder, output_time_major=True, scope=decoder_scope)
-                    self.decoder_output = outputs.rnn_output
-                    self.logits = tf.transpose(
-                        self.projection_layer(self.decoder_output), perm=[1, 0, 2])
-                    self.logits_reshape = tf.concat(
-                        [self.logits, tf.zeros([self.batch_size, summary_max_len - tf.shape(self.logits)[1], self.vocabulary_size])], axis=1)
+                helper = tf.contrib.seq2seq.TrainingHelper(self.decoder_emb_inp, self.decoder_len, time_major=True)
+                decoder = tf.contrib.seq2seq.BasicDecoder(decoder_cell, helper, initial_state)
+                outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(decoder, output_time_major=True, scope=decoder_scope)
+                self.decoder_output = outputs.rnn_output
+                self.logits = tf.transpose(
+                    self.projection_layer(self.decoder_output), perm=[1, 0, 2])
+                self.logits_reshape = tf.concat(
+                    [self.logits, tf.zeros([self.batch_size, summary_max_len - tf.shape(self.logits)[1], self.vocabulary_size])], axis=1)
             else:
-                if args.use_atten:
+                if self.use_atten:
                     tiled_encoder_output = tf.contrib.seq2seq.tile_batch(
                         tf.transpose(self.encoder_output, perm=[1, 0, 2]), multiplier=self.beam_width)
                     tiled_encoder_final_state = tf.contrib.seq2seq.tile_batch(self.encoder_state, multiplier=self.beam_width)
@@ -115,11 +104,10 @@ class Model(object):
                         start_tokens=tf.fill([self.batch_size], tf.constant(2)),
                         end_token=tf.constant(3),
                         initial_state=initial_state,
-                        beam_width=1,
+                        beam_width=self.beam_width,
                         output_layer=self.projection_layer
                     )
-                    outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(
-                        decoder, output_time_major=True, maximum_iterations=summary_max_len, scope=decoder_scope)
+                    outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(decoder, output_time_major=True, maximum_iterations=summary_max_len, scope=decoder_scope)
                     self.prediction = tf.transpose(outputs.predicted_ids, perm=[1, 2, 0])
 
         with tf.name_scope("loss"):

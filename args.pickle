@@ -18,7 +18,7 @@ p7
 I300
 sS'use_atten'
 p8
-I01
+I00
 sS'learning_rate'
 p9
 F0.001
@@ -45,5 +45,5 @@ p16
 F0.8
 sS'beam_width'
 p17
-I10
+I1
 sb.
