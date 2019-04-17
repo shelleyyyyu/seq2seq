@@ -17,6 +17,7 @@ def add_arguments(parser):
     parser.add_argument("--beam_width", type=int, default=1, help="Beam width for beam search decoder.")
     parser.add_argument("--glove", action="store_true", help="Use glove as initial word embedding.")
     parser.add_argument("--embedding_size", type=int, default=300, help="Word embedding size.")
+    parser.add_argument("--recursive_count", type=int, default=3, help="Word embedding size.")
 
     parser.add_argument("--learning_rate", type=float, default=1e-3, help="Learning rate.")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size.")

@@ -66,6 +66,19 @@ def get_test_list(data_path):
             title_list.append(title)
         return title_list, story_list
 
+def get_test_gt_list(data_path):
+    with open(data_path, "r") as f:
+        story_list = []
+        for line in f.readlines():
+            total_story = []
+            line_array = line.split("]")
+            title = line_array[0][1:]
+            story = line_array[1].split("<split>")[:-1]
+
+            total_story.extend(story[:-1])
+            story_list.append(total_story)
+        return story_list
+
 
 
 def build_dict(step, toy=False):
@@ -99,9 +112,9 @@ def build_dict(step, toy=False):
 
     return word_dict, reversed_dict, article_max_len, summary_max_len
 
-def build_train_dataset(word_dict, article_max_len, summary_max_len):
-    story_list = get_train_list(train_path)
-    story_gt_list = get_train_list(train_gt_path)
+def build_train_dataset(path, gt_path, word_dict, article_max_len, summary_max_len):
+    story_list = get_train_list(path)
+    story_gt_list = get_train_list(gt_path)
     x = []
     y = []
     for story_index in range(len(story_list)):
@@ -123,13 +136,26 @@ def build_train_dataset(word_dict, article_max_len, summary_max_len):
     return x, y
 
 
-def build_test_dataset(word_dict, article_max_len):
-    title_list, story_list = get_test_list(test_path)
+def build_test_dataset(path, word_dict, article_max_len):
+    title_list, story_list = get_test_list(path)
     s = [[word_tokenize(d) for d in story]for story in story_list]
     s = [[[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in x]for x in s]
     s = [[d[:article_max_len] for d in x] for x in s]
     s = [[d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in x] for x in s]
     return title_list, s
+
+
+def build_train_edit_dataset(path, word_dict, article_max_len):
+    title_list, story_list = get_test_list(path)
+    s = [[word_tokenize(d) for d in story]for story in story_list]
+    s = [[[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in x]for x in s]
+    s = [[d[:article_max_len] for d in x] for x in s]
+    s = [[d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in x] for x in s]
+    return title_list, s
+
+def build_test_gt_dataset(path):
+    story_list = get_test_gt_list(path)
+    return story_list
 
 
 def build_train_draft_dataset(word_dict, article_max_len):
