@@ -21,7 +21,7 @@ def add_arguments(parser):
 
     parser.add_argument("--learning_rate", type=float, default=1e-3, help="Learning rate.")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size.")
-    parser.add_argument("--num_epochs", type=int, default=1, help="Number of epochs.")
+    parser.add_argument("--num_epochs", type=int, default=20, help="Number of epochs.")
     parser.add_argument("--keep_prob", type=float, default=0.8, help="Dropout keep prob.")
 
     parser.add_argument("--toy", action="store_true", help="Use only 50K samples of data")
@@ -143,7 +143,6 @@ for index in range(args.recursive_count):
     else:
         if index != 0:
         #if args.with_model:
-            print "HEREEEEEEEE"
             old_model_checkpoint_path = open('saved_model/checkpoint', 'r')
             old_model_checkpoint_path = "".join(["saved_model/", old_model_checkpoint_path.read().splitlines()[0].split('"')[1] ])
 
