@@ -105,7 +105,7 @@ def build_train_dataset(word_dict, article_max_len, summary_max_len):
     x = []
     y = []
     for story_index in range(len(story_list)):
-        for word_index in range(5):
+        for word_index in range(4):
             x.append(story_list[story_index][word_index+1])
             y.append(story_gt_list[story_index][word_index+1])
 
