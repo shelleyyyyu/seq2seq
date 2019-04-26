@@ -24,7 +24,7 @@ p9
 F0.001
 sS'num_epochs'
 p10
-I2
+I20
 sS'glove'
 p11
 I00

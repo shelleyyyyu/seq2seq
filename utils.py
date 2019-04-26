@@ -8,6 +8,8 @@ import numpy as np
 from gensim.models.keyedvectors import KeyedVectors
 from gensim.test.utils import get_tmpfile
 from gensim.scripts.glove2word2vec import glove2word2vec
+import numpy as np
+
 
 
 train_path = "result/train.txt"
@@ -38,16 +40,20 @@ def get_text_list(data_path, toy):
 def get_train_list(data_path):
     with open(data_path, "r") as f:
         story_list = []
+        title_list = []
         for line in f.readlines():
             total_story = []
+            total_title = []
             line_array = line.split("]")
             title = line_array[0][1:]
             story = line_array[1].split("<split>")[:-1]
 
-            total_story.append(title)
+            total_title.append(title)
             total_story.extend(story)
+
+            title_list.append(total_title)
             story_list.append(total_story)
-        return story_list
+        return title_list, story_list
 
 
 def get_test_list(data_path):
@@ -100,13 +106,16 @@ def build_dict(step, toy=False):
     return word_dict, reversed_dict, article_max_len, summary_max_len
 
 def build_train_dataset(word_dict, article_max_len, summary_max_len):
-    story_list = get_train_list(train_path)
-    story_gt_list = get_train_list(train_gt_path)
+    title_list, story_list = get_train_list(train_path)
+    _, story_gt_list = get_train_list(train_gt_path)
     x = []
+    #t = []
     y = []
+
     for story_index in range(len(story_list)):
         for word_index in range(4):
-            x.append(story_list[story_index][word_index+1])
+            x.append(title_list[story_index][0] + " " + story_list[story_index][word_index+1])
+            #t.append(title_list[story_index][0])
             y.append(story_gt_list[story_index][word_index+1])
 
     x = [word_tokenize(d) for d in x]
@@ -114,17 +123,25 @@ def build_train_dataset(word_dict, article_max_len, summary_max_len):
     x = [d[:article_max_len] for d in x]
     x = [d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in x]
 
+    #t = [word_tokenize(d) for d in t]
+    #t = [[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in t]
+    #t = [d[:article_max_len] for d in t]
+    #t = [d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in t]
+
     y = [word_tokenize(d) for d in y]
     y = [[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in y]
     y = [d[:(summary_max_len - 1)] for d in y]
 
-    print x[0]
-    print y[0]
     return x, y
 
 
 def build_test_dataset(word_dict, article_max_len):
     title_list, story_list = get_test_list(test_path)
+    s = []
+    for story_index in range(len(story_list)):
+        for word_index in range(4):
+            s.append(title_list[story_index] + " " + story_list[story_index][word_index+1])
+
     s = [[word_tokenize(d) for d in story]for story in story_list]
     s = [[[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in x]for x in s]
     s = [[d[:article_max_len] for d in x] for x in s]
