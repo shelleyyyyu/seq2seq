@@ -9,7 +9,7 @@ with open("args.pickle", "rb") as f:
     args = pickle.load(f)
 
 print("Loading dictionary...")
-word_dict, reversed_dict, article_max_len, summary_max_len = build_dict("test", args.toy)
+word_dict, reversed_dict, article_max_len, summary_max_len = build_dict("test", False)
 print("Loading test dataset...")
 title_list, test_x = build_test_dataset(word_dict, article_max_len)
 test_x_len = [len([y for y in x if y != 0]) for x in test_x]

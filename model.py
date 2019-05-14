@@ -30,8 +30,10 @@ class Model(object):
 
         with tf.name_scope("embedding"):
             if not forward_only and args.glove:
+                print ('HEREEE 1')
                 init_embeddings = tf.constant(get_init_embedding(reversed_dict, self.embedding_size), dtype=tf.float32)
             else:
+                print ('HEREEE 2')
                 init_embeddings = tf.random_uniform([self.vocabulary_size, self.embedding_size], -1.0, 1.0)
             self.embeddings = tf.get_variable("embeddings", initializer=init_embeddings)
             self.encoder_emb_inp = tf.transpose(tf.nn.embedding_lookup(self.embeddings, self.X), perm=[1, 0, 2])
@@ -84,7 +86,7 @@ class Model(object):
                                                                        attention_layer_size=self.num_hidden * 2)
                     initial_state = decoder_cell.zero_state(dtype=tf.float32, batch_size=self.batch_size * self.beam_width)
                     initial_state = initial_state.clone(cell_state=tiled_encoder_final_state)
-                    decoder = tf.contrib.seq2seq.BeamSearchDecoder(
+                    '''decoder = tf.contrib.seq2seq.BeamSearchDecoder(
                         cell=decoder_cell,
                         embedding=self.embeddings,
                         start_tokens=tf.fill([self.batch_size], tf.constant(2)),
@@ -95,20 +97,35 @@ class Model(object):
                     )
                     outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(
                         decoder, output_time_major=True, maximum_iterations=summary_max_len, scope=decoder_scope)
-                    self.prediction = tf.transpose(outputs.predicted_ids, perm=[1, 2, 0])
-                else:
-                    initial_state = self.encoder_state
-                    decoder = tf.contrib.seq2seq.BeamSearchDecoder(
-                        cell=decoder_cell,
+                    self.prediction = tf.transpose(outputs.predicted_ids, perm=[1, 2, 0])'''
+
+
+                    helper = tf.contrib.seq2seq.GreedyEmbeddingHelper(
                         embedding=self.embeddings,
                         start_tokens=tf.fill([self.batch_size], tf.constant(2)),
-                        end_token=tf.constant(3),
-                        initial_state=initial_state,
-                        beam_width=self.beam_width,
-                        output_layer=self.projection_layer
-                    )
-                    outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(decoder, output_time_major=True, maximum_iterations=summary_max_len, scope=decoder_scope)
-                    self.prediction = tf.transpose(outputs.predicted_ids, perm=[1, 2, 0])
+                        end_token=tf.constant(3))
+
+                    decoder = tf.contrib.seq2seq.BasicDecoder(cell=decoder_cell, helper=helper,
+                                                                        initial_state=initial_state,
+                                                                        output_layer=self.projection_layer)
+                    outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(
+                        decoder, output_time_major=True, maximum_iterations=summary_max_len, scope=decoder_scope)
+                    self.prediction = tf.expand_dims(outputs.sample_id, -1)
+
+                else:
+                    initial_state = self.encoder_state
+                    helper = tf.contrib.seq2seq.GreedyEmbeddingHelper(
+                        embedding=self.embeddings,
+                        start_tokens=tf.fill([self.batch_size], tf.constant(2)),
+                        end_token=tf.constant(3))
+
+                    decoder = tf.contrib.seq2seq.BasicDecoder(cell=decoder_cell, helper=helper,
+                                                                        initial_state=initial_state,
+                                                                        output_layer=self.projection_layer)
+                    outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(
+                        decoder, output_time_major=True, maximum_iterations=summary_max_len, scope=decoder_scope)
+                    self.prediction = tf.expand_dims(outputs.sample_id, -1)
+
 
         with tf.name_scope("loss"):
             if not forward_only:

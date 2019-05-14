@@ -12,21 +12,22 @@ from utils import build_dict, build_train_dataset, batch_iter
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 def add_arguments(parser):
-    parser.add_argument("--num_hidden", type=int, default=150, help="Network size.")
-    parser.add_argument("--num_layers", type=int, default=2, help="Network depth.")
+    parser.add_argument("--num_hidden", type=int, default=500, help="Network size.")
+    parser.add_argument("--num_layers", type=int, default=1, help="Network depth.")
     parser.add_argument("--beam_width", type=int, default=1, help="Beam width for beam search decoder.")
     parser.add_argument("--glove", action="store_true", help="Use glove as initial word embedding.")
     parser.add_argument("--embedding_size", type=int, default=300, help="Word embedding size.")
 
-    parser.add_argument("--learning_rate", type=float, default=1e-3, help="Learning rate.")
+    parser.add_argument("--learning_rate", type=float, default=0.001, help="Learning rate.")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size.")
     parser.add_argument("--num_epochs", type=int, default=20, help="Number of epochs.")
     parser.add_argument("--keep_prob", type=float, default=0.8, help="Dropout keep prob.")
 
-    parser.add_argument("--toy", action="store_true", help="Use only 50K samples of data")
+    #parser.add_argument("--toy", action="store_true", help="Use only 50K samples of data")
     parser.add_argument("--use_atten", action="store_true", help="Use only 50K samples of data")
+    #parser.add_argument("--with_model", action="store_true", help="Continue from previously saved model")
 
-    parser.add_argument("--with_model", action="store_true", help="Continue from previously saved model")
+
 
 
 
@@ -38,14 +39,14 @@ with open("args.pickle", "wb") as f:
 
 if not os.path.exists("saved_model"):
     os.mkdir("saved_model")
-else:
-    if args.with_model:
-        old_model_checkpoint_path = open('saved_model/checkpoint', 'r')
-        old_model_checkpoint_path = "".join(["saved_model/", old_model_checkpoint_path.read().splitlines()[0].split('"')[1] ])
+#else:
+    #if args.with_model:
+    #    old_model_checkpoint_path = open('saved_model/checkpoint', 'r')
+    #    old_model_checkpoint_path = "".join(["saved_model/", old_model_checkpoint_path.read().splitlines()[0].split('"')[1] ])
 
 
 print("Building dictionary...")
-word_dict, reversed_dict, article_max_len, summary_max_len = build_dict("train", args.toy)
+word_dict, reversed_dict, article_max_len, summary_max_len = build_dict("train", False)
 print("Loading training dataset...")
 train_x, train_y = build_train_dataset(word_dict, article_max_len, summary_max_len)
 with tf.Session() as sess:
