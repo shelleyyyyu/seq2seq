@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 from nltk.tokenize import word_tokenize
 import nltk
 nltk.download('punkt')
@@ -69,8 +73,8 @@ def build_dict(step, toy=False):
     if step == "train":
         train_story_list = get_text_list(train_path, toy)
         words = list()
-        for sentence in train_story_list :
-            for word in word_tokenize(sentence):
+        for sentence in train_story_list:
+            for word in word_tokenize(sentence.encode('utf-8').decode('utf-8')):
                 words.append(word)
 
         word_counter = collections.Counter(words).most_common()
@@ -106,12 +110,12 @@ def build_train_dataset(word_dict, article_max_len, summary_max_len):
             x.append(story[index])
             y.append(story[index+1])
 
-    x = [word_tokenize(d) for d in x]
+    x = [word_tokenize(d.encode('utf-8').decode('utf-8')) for d in x]
     x = [[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in x]
     x = [d[:article_max_len] for d in x]
     x = [d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in x]
 
-    y = [word_tokenize(d) for d in y]
+    y = [word_tokenize(d.encode('utf-8').decode('utf-8')) for d in y]
     y = [[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in y]
     y = [d[:(summary_max_len - 1)] for d in y]
 
@@ -120,7 +124,7 @@ def build_train_dataset(word_dict, article_max_len, summary_max_len):
 
 def build_test_dataset(word_dict, article_max_len):
     title_list, story_list = get_test_list(test_path)
-    s = [[word_tokenize(d) for d in story]for story in story_list]
+    s = [[word_tokenize(d.encode('utf-8').decode('utf-8')) for d in story]for story in story_list]
     s = [[[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in x]for x in s]
     s = [[d[:article_max_len] for d in x] for x in s]
     s = [[d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in x] for x in s]
@@ -129,7 +133,7 @@ def build_test_dataset(word_dict, article_max_len):
 
 def build_train_draft_dataset(word_dict, article_max_len):
     title_list, story_list = get_test_list(train_path)
-    s = [[word_tokenize(d) for d in story]for story in story_list]
+    s = [[word_tokenize(d.encode('utf-8').decode('utf-8')) for d in story]for story in story_list]
     s = [[[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in x]for x in s]
     s = [[d[:article_max_len] for d in x] for x in s]
     s = [[d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in x] for x in s]
@@ -138,7 +142,7 @@ def build_train_draft_dataset(word_dict, article_max_len):
 
 def build_valid_draft_dataset(word_dict, article_max_len):
     title_list, story_list = get_test_list(valid_path)
-    s = [[word_tokenize(d) for d in story]for story in story_list]
+    s = [[word_tokenize(d.encode('utf-8').decode('utf-8')) for d in story]for story in story_list]
     s = [[[word_dict.get(w, word_dict["<unk>"]) for w in d] for d in x]for x in s]
     s = [[d[:article_max_len] for d in x] for x in s]
     s = [[d + (article_max_len - len(d)) * [word_dict["<padding>"]] for d in x] for x in s]
